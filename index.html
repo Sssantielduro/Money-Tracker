@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Santi Money Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <h1>Santi Money Tracker</h1>
+    <p class="subtitle">Track your cash, accounts, and plays in one place.</p>
+
+    <div class="summary-card">
+      <h2>Net Worth (Starter)</h2>
+      <p id="net-worth">$0.00</p>
+    </div>
+
+    <div class="section">
+      <h2>Add Transaction</h2>
+      <form id="tx-form">
+        <input type="number" id="amount" placeholder="Amount" step="0.01" required />
+        
+        <select id="type">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+
+        <select id="wallet">
+          <option value="cash">Cash</option>
+          <option value="checking">Checking</option>
+          <option value="savings">Savings</option>
+          <option value="credit">Credit</option>
+        </select>
+
+        <input type="text" id="tag" placeholder="Tag (food, gas, gym...)" />
+        <button type="submit">Add</button>
+      </form>
+    </div>
+
+    <div class="section">
+      <h2>Transactions</h2>
+      <ul id="tx-list"></ul>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
