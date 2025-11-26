@@ -43,8 +43,10 @@
     window.signOutFirebase = signOut;
     window.onFirebaseAuthStateChanged = onAuthStateChanged;
   </script>
-</head>
 
+  <!-- Plaid Link SDK -->
+  <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+</head>
 <body>
   <div class="app">
     <h1>Santi Money Tracker</h1>
@@ -104,13 +106,15 @@
 
     <!-- 👇 Only visible when logged in -->
     <div id="authed-area" style="display:none;">
+      <!-- Summary + controls -->
       <div class="summary-card">
-        <h2>Net Worth (Starter)</h2>
+        <h2>Net Worth (Manual)</h2>
         <p id="net-worth">$0.00</p>
         <button id="reset-data">Reset All Data</button>
+        <button id="connect-bank">Connect Bank</button>
       </div>
 
-      <!-- Add Transaction -->
+      <!-- Add Transaction (manual cash / plays) -->
       <div class="section">
         <h2>Add Item</h2>
         <form id="tx-form">
@@ -137,15 +141,25 @@
         </form>
       </div>
 
-      <!-- List -->
+      <!-- Manual Breakdown -->
       <div class="section">
         <h2>Breakdown</h2>
         <ul id="tx-list"></ul>
       </div>
+
+      <!-- Linked Accounts via Plaid -->
+      <div class="section">
+        <div class="accounts-header">
+          <h2>Linked Accounts</h2>
+          <button id="refresh-accounts">Refresh Accounts</button>
+        </div>
+        <p id="accounts-total">Total (Banks): $0.00</p>
+        <ul id="accounts-list"></ul>
+      </div>
     </div>
   </div>
 
-  <!-- 🔥 App logic -->
+  <!-- Main App Logic -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
