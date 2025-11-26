@@ -1,79 +1,72 @@
-// ==== AUTH SETUP ====
+// =========================
+// AUTH SETUP
+// =========================
 
-// grab Firebase stuff exposed from index.html
+// Firebase exposed from index.html
 const auth = window.firebaseAuth;
 const GoogleAuthProviderCtor = window.GoogleAuthProvider;
 const signInWithPopupFn = window.signInWithPopup;
 const signOutFn = window.signOutFirebase;
 const onAuthStateChangedFn = window.onFirebaseAuthStateChanged;
 
-// DOM elements for auth bar + authed area
+// DOM
 const authStatusEl = document.getElementById("auth-status");
 const googleLoginBtn = document.getElementById("google-login");
 const logoutBtn = document.getElementById("logout");
 const authedArea = document.getElementById("authed-area");
 
-// this will hold the currently logged in user (or null)
+// Track logged user
 let currentUser = null;
 
-// provider for Google login
+// Provider
 const googleProvider = new GoogleAuthProviderCtor();
 
-// listen for login / logout changes
+// Watch login changes
 onAuthStateChangedFn(auth, (user) => {
   currentUser = user || null;
 
   if (user) {
-    // logged in
     authStatusEl.textContent = `Signed in as ${user.email}`;
     googleLoginBtn.style.display = "none";
     logoutBtn.style.display = "inline-block";
-    authedArea.style.display = "block";   // <-- show tracker
-    console.log("Signed in:", user.uid, user.email);
+    authedArea.style.display = "block";
   } else {
-    // logged out
     authStatusEl.textContent = "Not signed in";
     googleLoginBtn.style.display = "inline-block";
     logoutBtn.style.display = "none";
-    authedArea.style.display = "none";    // <-- hide tracker
-    console.log("Signed out");
+    authedArea.style.display = "none";
   }
 });
 
-// click = sign in with Google
+// Login
 googleLoginBtn.addEventListener("click", async () => {
   try {
     await signInWithPopupFn(auth, googleProvider);
   } catch (err) {
     console.error("Google sign-in error:", err);
-    alert("Error signing in. Check console for details.");
+    alert("Google popup blocked or misconfigured.");
   }
 });
 
-// click = log out
+// Logout
 logoutBtn.addEventListener("click", async () => {
   try {
     await signOutFn(auth);
   } catch (err) {
     console.error("Sign-out error:", err);
-    alert("Error signing out. Check console for details.");
   }
 });
 
-// ==== END AUTH SETUP ====
-// basic in-memory data for now
+// =========================
+// LOCAL DATA STORAGE
+// =========================
+
 let transactions = [];
 let netWorth = 0;
-...
 
-// Key for saving data in the browser
 const STORAGE_KEY = "santi-money-tracker-state";
 
-// app state
-let transactions = [];
-let netWorth = 0;
-
-// DOM elements
+// DOM
 const form = document.getElementById("tx-form");
 const amountInput = document.getElementById("amount");
 const typeInput = document.getElementById("type");
@@ -83,76 +76,48 @@ const txList = document.getElementById("tx-list");
 const netWorthDisplay = document.getElementById("net-worth");
 const resetButton = document.getElementById("reset-data");
 
-// ---- persistence helpers ----
-function saveState() {
-  const data = {
-    transactions,
-    netWorth,
-  };
-
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (err) {
-    console.error("Error saving state:", err);
-  }
-}
-
+// Load saved data
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
 
     const data = JSON.parse(raw);
-
-    if (Array.isArray(data.transactions)) {
-      transactions = data.transactions;
-    }
-
-    if (typeof data.netWorth === "number") {
-      netWorth = data.netWorth;
-    }
+    transactions = Array.isArray(data.transactions) ? data.transactions : [];
+    netWorth = typeof data.netWorth === "number" ? data.netWorth : 0;
   } catch (err) {
-    console.error("Error loading state:", err);
+    console.error("Error loading:", err);
   }
 }
 
-// ---- rendering ----
+// Save
+function saveState() {
+  const data = { transactions, netWorth };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// Render
 function renderTransactions() {
   txList.innerHTML = "";
-
-  transactions
-    .slice()
-    .reverse()
-    .forEach((tx) => {
-      const li = document.createElement("li");
-      li.className = "tx-item";
-
-      const sideA = document.createElement("span");
-      sideA.textContent = `${tx.amount > 0 ? "+" : ""}${tx.amount.toFixed(
-        2
-      )} (${tx.wallet})`;
-
-      const sideB = document.createElement("span");
-      sideB.textContent = tx.tag;
-
-      li.appendChild(sideA);
-      li.appendChild(sideB);
-      txList.appendChild(li);
-    });
+  [...transactions].reverse().forEach((tx) => {
+    const li = document.createElement("li");
+    li.textContent = `${tx.amount > 0 ? "+" : ""}${tx.amount.toFixed(2)} (${tx.wallet}) — ${tx.tag}`;
+    txList.appendChild(li);
+  });
 }
 
 function renderNetWorth() {
   netWorthDisplay.textContent = `$${netWorth.toFixed(2)}`;
 }
 
-// ---- event handlers ----
+// Add transaction
 form.addEventListener("submit", (e) => {
   e.preventDefault();
 
   const amount = parseFloat(amountInput.value);
   const type = typeInput.value;
   const wallet = walletInput.value;
-  const tag = tagInput.value.trim();
+  const tag = tagInput.value.trim() || "untagged";
 
   if (isNaN(amount) || amount <= 0) {
     alert("Put a real amount, king.");
@@ -165,30 +130,32 @@ form.addEventListener("submit", (e) => {
     id: Date.now(),
     amount: signedAmount,
     wallet,
-    tag: tag || "untagged",
+    tag,
   };
 
   transactions.push(tx);
   netWorth += signedAmount;
 
+  saveState();
   renderTransactions();
   renderNetWorth();
-  saveState();
 
   form.reset();
 });
 
+// Reset all
 resetButton.addEventListener("click", () => {
   if (!confirm("Wipe all data?")) return;
 
   transactions = [];
   netWorth = 0;
+
   saveState();
   renderTransactions();
   renderNetWorth();
 });
 
-// ---- initial boot ----
+// Startup
 loadState();
 renderTransactions();
 renderNetWorth();
