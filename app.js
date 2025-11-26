@@ -68,6 +68,7 @@ onAuthStateChangedFn(auth, async (user) => {
     // clear local state
     transactions = [];
     netWorth = 0;
+    renderAll();
   }
 });
 
@@ -150,9 +151,9 @@ if (emailLoginBtn) {
 // =========================
 
 const phoneInput = document.getElementById("phone");
-const sendCodeBtn = document.getElementById("send-code");
+const sendBtn = document.getElementById("send");
 const codeInput = document.getElementById("code");
-const verifyCodeBtn = document.getElementById("verify-code");
+const verifyBtn = document.getElementById("verify");
 
 let recaptchaVerifier = null;
 let confirmationResultGlobal = null;
@@ -160,7 +161,6 @@ let confirmationResultGlobal = null;
 function setupRecaptcha() {
   if (recaptchaVerifier) return;
 
-  // Keep a reference on window so Firebase doesn't GC it
   recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
     size: "invisible",
     callback: (response) => {
@@ -171,8 +171,8 @@ function setupRecaptcha() {
   window.recaptchaVerifier = recaptchaVerifier;
 }
 
-if (sendCodeBtn) {
-  sendCodeBtn.addEventListener("click", async () => {
+if (sendBtn) {
+  sendBtn.addEventListener("click", async () => {
     const phoneNumber = phoneInput.value.trim();
     if (!phoneNumber) {
       alert("Enter a phone number.");
@@ -194,8 +194,8 @@ if (sendCodeBtn) {
   });
 }
 
-if (verifyCodeBtn) {
-  verifyCodeBtn.addEventListener("click", async () => {
+if (verifyBtn) {
+  verifyBtn.addEventListener("click", async () => {
     const code = codeInput.value.trim();
     if (!code) {
       alert("Enter the verification code.");
