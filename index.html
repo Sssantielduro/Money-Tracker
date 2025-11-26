@@ -50,10 +50,56 @@
     <h1>Santi Money Tracker</h1>
     <p class="subtitle">Track your cash, accounts, and plays in one place.</p>
 
+    <!-- AUTH BAR -->
     <div class="auth-bar">
       <span id="auth-status">Not signed in</span>
       <button id="google-login">Sign in with Google</button>
       <button id="logout" style="display:none;">Log out</button>
+    </div>
+
+    <!-- EXTRA AUTH OPTIONS -->
+    <div class="auth-extra">
+      <!-- Email / Password -->
+      <div class="auth-card">
+        <h2>Email login</h2>
+        <input
+          id="email"
+          type="email"
+          placeholder="Email"
+          autocomplete="username"
+        />
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+          autocomplete="current-password"
+        />
+        <div class="auth-buttons-row">
+          <button id="email-signup">Create account</button>
+          <button id="email-login">Log in</button>
+        </div>
+      </div>
+
+      <!-- Phone -->
+      <div class="auth-card">
+        <h2>Phone login</h2>
+        <input
+          id="phone"
+          type="tel"
+          placeholder="Phone (e.g. +1 555 123 4567)"
+        />
+        <button id="send-code">Send code</button>
+
+        <input
+          id="code"
+          type="text"
+          placeholder="Verification code"
+        />
+        <button id="verify-code">Verify code</button>
+
+        <!-- For Firebase phone auth reCAPTCHA -->
+        <div id="recaptcha-container"></div>
+      </div>
     </div>
 
     <!-- 👇 Only visible when logged in -->

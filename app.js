@@ -1,3 +1,11 @@
+// IMPORT EXTRA AUTH HELPERS (email + phone)
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
 // =========================
 // AUTH SETUP
 // =========================
@@ -33,7 +41,7 @@ onAuthStateChangedFn(auth, (user) => {
   currentUser = user || null;
 
   if (user) {
-    authStatusEl.textContent = `Signed in as ${user.email}`;
+    authStatusEl.textContent = `Signed in as ${user.email || user.phoneNumber}`;
     googleLoginBtn.style.display = "none";
     logoutBtn.style.display = "inline-block";
     authedArea.style.display = "block";
@@ -49,7 +57,7 @@ onAuthStateChangedFn(auth, (user) => {
   }
 });
 
-// Login
+// Login with Google
 googleLoginBtn.addEventListener("click", async () => {
   try {
     await signInWithPopupFn(auth, googleProvider);
@@ -75,6 +83,127 @@ logoutBtn.addEventListener("click", async () => {
 });
 
 // =========================
+// EMAIL / PASSWORD AUTH
+// =========================
+
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const emailSignupBtn = document.getElementById("email-signup");
+const emailLoginBtn = document.getElementById("email-login");
+
+if (emailSignupBtn) {
+  emailSignupBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      alert("Enter email and password.");
+      return;
+    }
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      alert("Account created and logged in.");
+    } catch (err) {
+      console.error("Email signup error:", err);
+      alert(err.message || "Email sign-up failed.");
+    }
+  });
+}
+
+if (emailLoginBtn) {
+  emailLoginBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      alert("Enter email and password.");
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // auth observer will handle UI
+    } catch (err) {
+      console.error("Email login error:", err);
+      alert(err.message || "Email login failed.");
+    }
+  });
+}
+
+// =========================
+// PHONE AUTH
+// =========================
+
+const phoneInput = document.getElementById("phone");
+const sendCodeBtn = document.getElementById("send-code");
+const codeInput = document.getElementById("code");
+const verifyCodeBtn = document.getElementById("verify-code");
+
+let recaptchaVerifier = null;
+let confirmationResultGlobal = null;
+
+function setupRecaptcha() {
+  if (recaptchaVerifier) return;
+
+  // Keep a reference on window so Firebase doesn't GC it
+  recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+    size: "invisible",
+    callback: (response) => {
+      console.log("reCAPTCHA resolved:", response);
+    },
+  });
+
+  window.recaptchaVerifier = recaptchaVerifier;
+}
+
+if (sendCodeBtn) {
+  sendCodeBtn.addEventListener("click", async () => {
+    const phoneNumber = phoneInput.value.trim();
+    if (!phoneNumber) {
+      alert("Enter a phone number with country code (e.g. +1...).");
+      return;
+    }
+
+    try {
+      setupRecaptcha();
+      confirmationResultGlobal = await signInWithPhoneNumber(
+        auth,
+        phoneNumber,
+        recaptchaVerifier
+      );
+      alert("Code sent. Check your SMS.");
+    } catch (err) {
+      console.error("Phone sign-in error:", err);
+      alert(err.message || "Failed to send code.");
+    }
+  });
+}
+
+if (verifyCodeBtn) {
+  verifyCodeBtn.addEventListener("click", async () => {
+    const code = codeInput.value.trim();
+    if (!code) {
+      alert("Enter the verification code.");
+      return;
+    }
+
+    if (!confirmationResultGlobal) {
+      alert("Send the code first.");
+      return;
+    }
+
+    try {
+      await confirmationResultGlobal.confirm(code);
+      // auth observer will update UI
+    } catch (err) {
+      console.error("Code verify error:", err);
+      alert(err.message || "Failed to verify code.");
+    }
+  });
+}
+
+// =========================
 // LOCAL DATA STORAGE (Money tracker)
 // =========================
 
@@ -85,9 +214,9 @@ const STORAGE_KEY = "santi-money-tracker-state";
 
 // DOM for tracker
 const form = document.getElementById("tx-form");
-const labelInput = document.getElementById("label");
-const amountInput = document.getElementById("amount");
-const typeInput = document.getElementById("type");
+const labelInput2 = document.getElementById("label");
+const amountInput2 = document.getElementById("amount");
+const typeInput2 = document.getElementById("type");
 const netWorthEl = document.getElementById("net-worth");
 const txListEl = document.getElementById("tx-list");
 const resetBtn = document.getElementById("reset-data");
@@ -117,8 +246,7 @@ function saveState() {
 function computeNetWorth() {
   netWorth = transactions.reduce((sum, tx) => {
     const amt = Number(tx.amount) || 0;
-    const positive =
-      tx.type === "asset" || tx.type === "income";
+    const positive = tx.type === "asset" || tx.type === "income";
 
     return sum + (positive ? amt : -amt);
   }, 0);
@@ -137,8 +265,7 @@ function renderAll() {
     const li = document.createElement("li");
     li.className = "tx-row";
 
-    const sign =
-      tx.type === "asset" || tx.type === "income" ? "+" : "-";
+    const sign = tx.type === "asset" || tx.type === "income" ? "+" : "-";
 
     li.innerHTML = `
       <span class="tx-label">${tx.label}</span>
@@ -155,9 +282,9 @@ if (form) {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const label = labelInput.value.trim();
-    const amount = Number(amountInput.value);
-    const type = typeInput.value;
+    const label = labelInput2.value.trim();
+    const amount = Number(amountInput2.value);
+    const type = typeInput2.value;
 
     if (!label || isNaN(amount)) {
       alert("Enter a label and a valid amount.");
@@ -175,7 +302,7 @@ if (form) {
     renderAll();
 
     form.reset();
-    typeInput.value = "asset";
+    typeInput2.value = "asset";
   });
 }
 
