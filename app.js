@@ -37,6 +37,10 @@ onAuthStateChangedFn(auth, (user) => {
     googleLoginBtn.style.display = "none";
     logoutBtn.style.display = "inline-block";
     authedArea.style.display = "block";
+
+    // when user is ready, load their local data
+    loadState();
+    renderAll();
   } else {
     authStatusEl.textContent = "Not signed in";
     googleLoginBtn.style.display = "inline-block";
@@ -71,7 +75,7 @@ logoutBtn.addEventListener("click", async () => {
 });
 
 // =========================
-// LOCAL DATA STORAGE (Your money tracker stuff)
+// LOCAL DATA STORAGE (Money tracker)
 // =========================
 
 let transactions = [];
@@ -79,9 +83,110 @@ let netWorth = 0;
 
 const STORAGE_KEY = "santi-money-tracker-state";
 
-// Example DOM hookup
+// DOM for tracker
 const form = document.getElementById("tx-form");
+const labelInput = document.getElementById("label");
 const amountInput = document.getElementById("amount");
 const typeInput = document.getElementById("type");
+const netWorthEl = document.getElementById("net-worth");
+const txListEl = document.getElementById("tx-list");
+const resetBtn = document.getElementById("reset-data");
 
-// (Add your functions below…)
+// Load from localStorage
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+
+  try {
+    const data = JSON.parse(raw);
+    if (Array.isArray(data.transactions)) {
+      transactions = data.transactions;
+    }
+  } catch (err) {
+    console.error("Failed to parse saved state:", err);
+  }
+}
+
+// Save to localStorage
+function saveState() {
+  const data = { transactions };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// Recalculate net worth from transactions
+function computeNetWorth() {
+  netWorth = transactions.reduce((sum, tx) => {
+    const amt = Number(tx.amount) || 0;
+    const positive =
+      tx.type === "asset" || tx.type === "income";
+
+    return sum + (positive ? amt : -amt);
+  }, 0);
+}
+
+// Render list + net worth
+function renderAll() {
+  computeNetWorth();
+
+  // Net worth text
+  netWorthEl.textContent = `$${netWorth.toFixed(2)}`;
+
+  // List
+  txListEl.innerHTML = "";
+  transactions.forEach((tx) => {
+    const li = document.createElement("li");
+    li.className = "tx-row";
+
+    const sign =
+      tx.type === "asset" || tx.type === "income" ? "+" : "-";
+
+    li.innerHTML = `
+      <span class="tx-label">${tx.label}</span>
+      <span class="tx-type">${tx.type}</span>
+      <span class="tx-amount">${sign}$${Number(tx.amount).toFixed(2)}</span>
+    `;
+
+    txListEl.appendChild(li);
+  });
+}
+
+// Handle new transaction
+if (form) {
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const label = labelInput.value.trim();
+    const amount = Number(amountInput.value);
+    const type = typeInput.value;
+
+    if (!label || isNaN(amount)) {
+      alert("Enter a label and a valid amount.");
+      return;
+    }
+
+    transactions.push({
+      id: Date.now(),
+      label,
+      amount,
+      type,
+    });
+
+    saveState();
+    renderAll();
+
+    form.reset();
+    typeInput.value = "asset";
+  });
+}
+
+// Handle reset
+if (resetBtn) {
+  resetBtn.addEventListener("click", () => {
+    if (!confirm("Reset all data?")) return;
+
+    transactions = [];
+    netWorth = 0;
+    localStorage.removeItem(STORAGE_KEY);
+    renderAll();
+  });
+}
