@@ -8,6 +8,7 @@
   // Import the functions from Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
   import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
   // Your config from Firebase (use YOUR real values)
@@ -30,6 +31,8 @@
   window.firebaseDb = db;
   window.GoogleAuthProvider = GoogleAuthProvider;
   window.signInWithPopup = signInWithPopup;
+  window.signInWithRedirect = signInWithRedirect;
+  window.getRedirectResult = getRedirectResult;
   window.signOutFirebase = signOut;
   window.onFirebaseAuthStateChanged = onAuthStateChanged;
 </script>
@@ -55,36 +58,3 @@
       </div>
 
       <div class="section">
-        <h2>Add Transaction</h2>
-        <form id="tx-form">
-          <input type="number" id="amount" placeholder="Amount" step="0.01" required />
-
-          <select id="type">
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-
-          <select id="wallet">
-            <option value="cash">Cash</option>
-            <option value="checking">Checking</option>
-            <option value="savings">Savings</option>
-            <option value="credit">Credit</option>
-          </select>
-
-          <input type="text" id="tag" placeholder="Tag (food, gas, gym...)" />
-          <button type="submit">Add</button>
-        </form>
-      </div>
-
-      <div class="section">
-        <h2>Transactions</h2>
-        <ul id="tx-list"></ul>
-      </div>
-    </div>
-    <!-- 👆 authed-area ends -->
-  </div>
-
-  <script src="app.js"></script>
-</body>
-
-</html>
