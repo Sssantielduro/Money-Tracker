@@ -6,6 +6,8 @@
 const auth = window.firebaseAuth;
 const GoogleAuthProviderCtor = window.GoogleAuthProvider;
 const signInWithPopupFn = window.signInWithPopup;
+const signInWithRedirectFn = window.signInWithRedirect;
+const getRedirectResultFn = window.getRedirectResult;
 const signOutFn = window.signOutFirebase;
 const onAuthStateChangedFn = window.onFirebaseAuthStateChanged;
 
@@ -20,6 +22,11 @@ let currentUser = null;
 
 // Provider
 const googleProvider = new GoogleAuthProviderCtor();
+
+// Complete redirect-based login if popup was blocked
+getRedirectResultFn(auth).catch((err) => {
+  console.error("Google redirect error:", err);
+});
 
 // Watch login changes
 onAuthStateChangedFn(auth, (user) => {
@@ -44,7 +51,19 @@ googleLoginBtn.addEventListener("click", async () => {
     await signInWithPopupFn(auth, googleProvider);
   } catch (err) {
     console.error("Google sign-in error:", err);
-    alert("Google popup blocked or misconfigured.");
+
+    if (err?.code === "auth/popup-blocked") {
+      try {
+        await signInWithRedirectFn(auth, googleProvider);
+        return;
+      } catch (redirectErr) {
+        console.error("Google redirect error:", redirectErr);
+        alert("Google sign-in failed: redirect blocked. Please allow popups for this site.");
+        return;
+      }
+    }
+
+    alert("Google sign-in failed. Please allow popups or try again.");
   }
 });
 
