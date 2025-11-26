@@ -20,7 +20,6 @@ import {
 // =========================
 // CONSTANTS – BACKEND ENDPOINTS
 // =========================
-// TODO: replace these with your real deployed URLs from Firebase Functions
 const CREATE_LINK_URL = "https://createlinktoken-ot47thhs2a-uc.a.run.app"; // createLinkToken
 const EXCHANGE_PUBLIC_TOKEN_URL = "https://exchangepublictoken-ot47thhs2a-uc.a.run.app"; // exchangePublicToken
 const GET_ACCOUNTS_URL = "https://getplaidaccounts-ot47thhs2a-uc.a.run.app"; // getPlaidAccounts
