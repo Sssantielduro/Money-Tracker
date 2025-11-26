@@ -4,46 +4,87 @@
   <meta charset="UTF-8" />
   <title>Santi Money Tracker</title>
   <link rel="stylesheet" href="style.css" />
+  <script type="module">
+  // Import the functions from Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  // Your config from Firebase (use YOUR real values)
+  const firebaseConfig = {
+      apiKey: "AIzaSyBggmaF4r5_6jay4k_EEAd3WTBUBhQT86Y",
+  authDomain: "money-tracker-19180.firebaseapp.com",
+  projectId: "money-tracker-19180",
+  storageBucket: "money-tracker-19180.firebasestorage.app",
+  messagingSenderId: "410840275432",
+  appId: "1:410840275432:web:0e5f33f7e3380cf31b6c5d",
+  };
+
+  // Init Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Expose to app.js
+  window.firebaseAuth = auth;
+  window.firebaseDb = db;
+  window.GoogleAuthProvider = GoogleAuthProvider;
+  window.signInWithPopup = signInWithPopup;
+  window.signOutFirebase = signOut;
+  window.onFirebaseAuthStateChanged = onAuthStateChanged;
+</script>
+
 </head>
 <body>
   <div class="app">
     <h1>Santi Money Tracker</h1>
     <p class="subtitle">Track your cash, accounts, and plays in one place.</p>
 
-    <div class="summary-card">
-      <h2>Net Worth (Starter)</h2>
-      <p id="net-worth">$0.00</p>
+    <div class="auth-bar">
+      <span id="auth-status">Not signed in</span>
+      <button id="google-login">Sign in with Google</button>
+      <button id="logout" style="display:none;">Log out</button>
+    </div>
+
+    <!-- 👇 Everything inside here requires login -->
+    <div id="authed-area">
+      <div class="summary-card">
+        <h2>Net Worth (Starter)</h2>
+        <p id="net-worth">$0.00</p>
         <button id="reset-data">Reset All Data</button>
+      </div>
+
+      <div class="section">
+        <h2>Add Transaction</h2>
+        <form id="tx-form">
+          <input type="number" id="amount" placeholder="Amount" step="0.01" required />
+
+          <select id="type">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+
+          <select id="wallet">
+            <option value="cash">Cash</option>
+            <option value="checking">Checking</option>
+            <option value="savings">Savings</option>
+            <option value="credit">Credit</option>
+          </select>
+
+          <input type="text" id="tag" placeholder="Tag (food, gas, gym...)" />
+          <button type="submit">Add</button>
+        </form>
+      </div>
+
+      <div class="section">
+        <h2>Transactions</h2>
+        <ul id="tx-list"></ul>
+      </div>
     </div>
-
-    <div class="section">
-      <h2>Add Transaction</h2>
-      <form id="tx-form">
-        <input type="number" id="amount" placeholder="Amount" step="0.01" required />
-        
-        <select id="type">
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
-        </select>
-
-        <select id="wallet">
-          <option value="cash">Cash</option>
-          <option value="checking">Checking</option>
-          <option value="savings">Savings</option>
-          <option value="credit">Credit</option>
-        </select>
-
-        <input type="text" id="tag" placeholder="Tag (food, gas, gym...)" />
-        <button type="submit">Add</button>
-      </form>
-    </div>
-
-    <div class="section">
-      <h2>Transactions</h2>
-      <ul id="tx-list"></ul>
-    </div>
+    <!-- 👆 authed-area ends -->
   </div>
 
   <script src="app.js"></script>
 </body>
+
 </html>

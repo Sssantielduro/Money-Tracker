@@ -1,3 +1,71 @@
+// ==== AUTH SETUP ====
+
+// grab Firebase stuff exposed from index.html
+const auth = window.firebaseAuth;
+const GoogleAuthProviderCtor = window.GoogleAuthProvider;
+const signInWithPopupFn = window.signInWithPopup;
+const signOutFn = window.signOutFirebase;
+const onAuthStateChangedFn = window.onFirebaseAuthStateChanged;
+
+// DOM elements for auth bar + authed area
+const authStatusEl = document.getElementById("auth-status");
+const googleLoginBtn = document.getElementById("google-login");
+const logoutBtn = document.getElementById("logout");
+const authedArea = document.getElementById("authed-area");
+
+// this will hold the currently logged in user (or null)
+let currentUser = null;
+
+// provider for Google login
+const googleProvider = new GoogleAuthProviderCtor();
+
+// listen for login / logout changes
+onAuthStateChangedFn(auth, (user) => {
+  currentUser = user || null;
+
+  if (user) {
+    // logged in
+    authStatusEl.textContent = `Signed in as ${user.email}`;
+    googleLoginBtn.style.display = "none";
+    logoutBtn.style.display = "inline-block";
+    authedArea.style.display = "block";   // <-- show tracker
+    console.log("Signed in:", user.uid, user.email);
+  } else {
+    // logged out
+    authStatusEl.textContent = "Not signed in";
+    googleLoginBtn.style.display = "inline-block";
+    logoutBtn.style.display = "none";
+    authedArea.style.display = "none";    // <-- hide tracker
+    console.log("Signed out");
+  }
+});
+
+// click = sign in with Google
+googleLoginBtn.addEventListener("click", async () => {
+  try {
+    await signInWithPopupFn(auth, googleProvider);
+  } catch (err) {
+    console.error("Google sign-in error:", err);
+    alert("Error signing in. Check console for details.");
+  }
+});
+
+// click = log out
+logoutBtn.addEventListener("click", async () => {
+  try {
+    await signOutFn(auth);
+  } catch (err) {
+    console.error("Sign-out error:", err);
+    alert("Error signing out. Check console for details.");
+  }
+});
+
+// ==== END AUTH SETUP ====
+// basic in-memory data for now
+let transactions = [];
+let netWorth = 0;
+...
+
 // Key for saving data in the browser
 const STORAGE_KEY = "santi-money-tracker-state";
 
