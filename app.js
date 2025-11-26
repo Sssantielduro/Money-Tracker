@@ -6,12 +6,19 @@ import {
   signInWithPhoneNumber,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
+import {
+  doc,
+  getDoc,
+  setDoc,
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
 // =========================
 // AUTH SETUP
 // =========================
 
 // Firebase exposed from index.html
 const auth = window.firebaseAuth;
+const db = window.firebaseDb;
 const GoogleAuthProviderCtor = window.GoogleAuthProvider;
 const signInWithPopupFn = window.signInWithPopup;
 const signInWithRedirectFn = window.signInWithRedirect;
@@ -24,6 +31,7 @@ const authStatusEl = document.getElementById("auth-status");
 const googleLoginBtn = document.getElementById("google-login");
 const logoutBtn = document.getElementById("logout");
 const authedArea = document.getElementById("authed-area");
+const authExtraEl = document.querySelector(".auth-extra");
 
 // Track logged user
 let currentUser = null;
@@ -37,23 +45,29 @@ getRedirectResultFn(auth).catch((err) => {
 });
 
 // Watch for user login/logout
-onAuthStateChangedFn(auth, (user) => {
+onAuthStateChangedFn(auth, async (user) => {
   currentUser = user || null;
 
   if (user) {
-    authStatusEl.textContent = `Signed in as ${user.email || user.phoneNumber}`;
+    const displayLabel = user.email || user.phoneNumber || "User";
+    authStatusEl.textContent = `Signed in as ${displayLabel}`;
     googleLoginBtn.style.display = "none";
     logoutBtn.style.display = "inline-block";
     authedArea.style.display = "block";
+    if (authExtraEl) authExtraEl.style.display = "none";
 
-    // when user is ready, load their local data
-    loadState();
-    renderAll();
+    // load Firestore data for this uid
+    await loadState();
   } else {
     authStatusEl.textContent = "Not signed in";
     googleLoginBtn.style.display = "inline-block";
     logoutBtn.style.display = "none";
     authedArea.style.display = "none";
+    if (authExtraEl) authExtraEl.style.display = "flex";
+
+    // clear local state
+    transactions = [];
+    netWorth = 0;
   }
 });
 
@@ -123,7 +137,7 @@ if (emailLoginBtn) {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // auth observer will handle UI
+      // auth observer will handle UI + data load
     } catch (err) {
       console.error("Email login error:", err);
       alert(err.message || "Email login failed.");
@@ -161,7 +175,7 @@ if (sendCodeBtn) {
   sendCodeBtn.addEventListener("click", async () => {
     const phoneNumber = phoneInput.value.trim();
     if (!phoneNumber) {
-      alert("Enter a phone number with country code (e.g. +1...).");
+      alert("Enter a phone number.");
       return;
     }
 
@@ -195,7 +209,7 @@ if (verifyCodeBtn) {
 
     try {
       await confirmationResultGlobal.confirm(code);
-      // auth observer will update UI
+      // auth observer will update UI + load Firestore
     } catch (err) {
       console.error("Code verify error:", err);
       alert(err.message || "Failed to verify code.");
@@ -204,13 +218,11 @@ if (verifyCodeBtn) {
 }
 
 // =========================
-// LOCAL DATA STORAGE (Money tracker)
+// FIRESTORE-BACKED MONEY TRACKER
 // =========================
 
 let transactions = [];
 let netWorth = 0;
-
-const STORAGE_KEY = "santi-money-tracker-state";
 
 // DOM for tracker
 const form = document.getElementById("tx-form");
@@ -221,25 +233,47 @@ const netWorthEl = document.getElementById("net-worth");
 const txListEl = document.getElementById("tx-list");
 const resetBtn = document.getElementById("reset-data");
 
-// Load from localStorage
-function loadState() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return;
+// Load from Firestore for this user
+async function loadState() {
+  if (!currentUser) {
+    transactions = [];
+    netWorth = 0;
+    renderAll();
+    return;
+  }
 
   try {
-    const data = JSON.parse(raw);
-    if (Array.isArray(data.transactions)) {
-      transactions = data.transactions;
+    const userDocRef = doc(db, "users", currentUser.uid);
+    const snap = await getDoc(userDocRef);
+
+    if (snap.exists()) {
+      const data = snap.data();
+      transactions = Array.isArray(data.transactions) ? data.transactions : [];
+    } else {
+      transactions = [];
     }
   } catch (err) {
-    console.error("Failed to parse saved state:", err);
+    console.error("Failed to load state from Firestore:", err);
+    transactions = [];
   }
+
+  renderAll();
 }
 
-// Save to localStorage
-function saveState() {
-  const data = { transactions };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+// Save to Firestore for this user
+async function saveState() {
+  if (!currentUser) return;
+
+  try {
+    const userDocRef = doc(db, "users", currentUser.uid);
+    await setDoc(
+      userDocRef,
+      { transactions },
+      { merge: true }
+    );
+  } catch (err) {
+    console.error("Failed to save state to Firestore:", err);
+  }
 }
 
 // Recalculate net worth from transactions
@@ -247,19 +281,17 @@ function computeNetWorth() {
   netWorth = transactions.reduce((sum, tx) => {
     const amt = Number(tx.amount) || 0;
     const positive = tx.type === "asset" || tx.type === "income";
-
     return sum + (positive ? amt : -amt);
   }, 0);
 }
 
 // Render list + net worth
 function renderAll() {
-  computeNetWorth();
+  if (!netWorthEl || !txListEl) return;
 
-  // Net worth text
+  computeNetWorth();
   netWorthEl.textContent = `$${netWorth.toFixed(2)}`;
 
-  // List
   txListEl.innerHTML = "";
   transactions.forEach((tx) => {
     const li = document.createElement("li");
@@ -279,7 +311,7 @@ function renderAll() {
 
 // Handle new transaction
 if (form) {
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const label = labelInput2.value.trim();
@@ -298,8 +330,8 @@ if (form) {
       type,
     });
 
-    saveState();
     renderAll();
+    await saveState();
 
     form.reset();
     typeInput2.value = "asset";
@@ -308,12 +340,12 @@ if (form) {
 
 // Handle reset
 if (resetBtn) {
-  resetBtn.addEventListener("click", () => {
+  resetBtn.addEventListener("click", async () => {
     if (!confirm("Reset all data?")) return;
 
     transactions = [];
     netWorth = 0;
-    localStorage.removeItem(STORAGE_KEY);
     renderAll();
+    await saveState();
   });
 }
