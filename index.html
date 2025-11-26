@@ -4,40 +4,48 @@
   <meta charset="UTF-8" />
   <title>Santi Money Tracker</title>
   <link rel="stylesheet" href="style.css" />
+
+  <!-- 🔥 Firebase Setup -->
   <script type="module">
-  // Import the functions from Firebase
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-  import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithPopup,
+      GoogleAuthProvider,
+      signOut,
+      signInWithRedirect,
+      getRedirectResult
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  // Your config from Firebase (use YOUR real values)
-  const firebaseConfig = {
+    const firebaseConfig = {
       apiKey: "AIzaSyBggmaF4r5_6jay4k_EEAd3WTBUBhQT86Y",
-  authDomain: "money-tracker-19180.firebaseapp.com",
-  projectId: "money-tracker-19180",
-  storageBucket: "money-tracker-19180.firebasestorage.app",
-  messagingSenderId: "410840275432",
-  appId: "1:410840275432:web:0e5f33f7e3380cf31b6c5d",
-  };
+      authDomain: "money-tracker-19180.firebaseapp.com",
+      projectId: "money-tracker-19180",
+      storageBucket: "money-tracker-19180.firebasestorage.app",
+      messagingSenderId: "410840275432",
+      appId: "1:410840275432:web:0e5f33f7e3380cf31b6c5d",
+    };
 
-  // Init Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  // Expose to app.js
-  window.firebaseAuth = auth;
-  window.firebaseDb = db;
-  window.GoogleAuthProvider = GoogleAuthProvider;
-  window.signInWithPopup = signInWithPopup;
-  window.signInWithRedirect = signInWithRedirect;
-  window.getRedirectResult = getRedirectResult;
-  window.signOutFirebase = signOut;
-  window.onFirebaseAuthStateChanged = onAuthStateChanged;
-</script>
+    // Expose to app.js
+    window.firebaseAuth = auth;
+    window.firebaseDb = db;
+    window.GoogleAuthProvider = GoogleAuthProvider;
+    window.signInWithPopup = signInWithPopup;
+    window.signInWithRedirect = signInWithRedirect;
+    window.getRedirectResult = getRedirectResult;
+    window.signOutFirebase = signOut;
+    window.onFirebaseAuthStateChanged = onAuthStateChanged;
+  </script>
 
 </head>
+
 <body>
   <div class="app">
     <h1>Santi Money Tracker</h1>
@@ -49,8 +57,8 @@
       <button id="logout" style="display:none;">Log out</button>
     </div>
 
-    <!-- 👇 Everything inside here requires login -->
-    <div id="authed-area">
+    <!-- 👇 Only visible when logged in -->
+    <div id="authed-area" style="display:none;">
       <div class="summary-card">
         <h2>Net Worth (Starter)</h2>
         <p id="net-worth">$0.00</p>
@@ -58,3 +66,12 @@
       </div>
 
       <div class="section">
+        <!-- your content here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔥 Load your app.js -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

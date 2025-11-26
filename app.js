@@ -1,9 +1,3 @@
-ogs
-
-app.js
-+20
--1
-
 // =========================
 // AUTH SETUP
 // =========================
@@ -29,12 +23,12 @@ let currentUser = null;
 // Provider
 const googleProvider = new GoogleAuthProviderCtor();
 
-// Complete redirect-based login if popup was blocked
+// Finish redirect login if popup was blocked
 getRedirectResultFn(auth).catch((err) => {
   console.error("Google redirect error:", err);
 });
 
-// Watch login changes
+// Watch for user login/logout
 onAuthStateChangedFn(auth, (user) => {
   currentUser = user || null;
 
@@ -57,20 +51,13 @@ googleLoginBtn.addEventListener("click", async () => {
     await signInWithPopupFn(auth, googleProvider);
   } catch (err) {
     console.error("Google sign-in error:", err);
-    alert("Google popup blocked or misconfigured.");
 
     if (err?.code === "auth/popup-blocked") {
-      try {
-        await signInWithRedirectFn(auth, googleProvider);
-        return;
-      } catch (redirectErr) {
-        console.error("Google redirect error:", redirectErr);
-        alert("Google sign-in failed: redirect blocked. Please allow popups for this site.");
-        return;
-      }
+      await signInWithRedirectFn(auth, googleProvider);
+      return;
     }
 
-    alert("Google sign-in failed. Please allow popups or try again.");
+    alert("Google sign-in failed. Enable popups and try again.");
   }
 });
 
@@ -84,7 +71,7 @@ logoutBtn.addEventListener("click", async () => {
 });
 
 // =========================
-// LOCAL DATA STORAGE
+// LOCAL DATA STORAGE (Your money tracker stuff)
 // =========================
 
 let transactions = [];
@@ -92,7 +79,9 @@ let netWorth = 0;
 
 const STORAGE_KEY = "santi-money-tracker-state";
 
-// DOM
+// Example DOM hookup
 const form = document.getElementById("tx-form");
 const amountInput = document.getElementById("amount");
 const typeInput = document.getElementById("type");
+
+// (Add your functions below…)
