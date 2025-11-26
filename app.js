@@ -56,7 +56,7 @@ onAuthStateChangedFn(auth, async (user) => {
     authedArea.style.display = "block";
     if (authExtraEl) authExtraEl.style.display = "none";
 
-    // load Firestore data for this uid
+    // Load server data for this uid
     await loadState();
   } else {
     authStatusEl.textContent = "Not signed in";
@@ -65,7 +65,7 @@ onAuthStateChangedFn(auth, async (user) => {
     authedArea.style.display = "none";
     if (authExtraEl) authExtraEl.style.display = "flex";
 
-    // clear local state
+    // Clear local UI state
     transactions = [];
     netWorth = 0;
     renderAll();
@@ -233,6 +233,39 @@ const netWorthEl = document.getElementById("net-worth");
 const txListEl = document.getElementById("tx-list");
 const resetBtn = document.getElementById("reset-data");
 
+const LOCAL_PREFIX = "santi-money-tracker:";
+
+function localKeyForUser(uid) {
+  return `${LOCAL_PREFIX}${uid}`;
+}
+
+function saveLocalBackup() {
+  if (!currentUser) return;
+  try {
+    const key = localKeyForUser(currentUser.uid);
+    localStorage.setItem(
+      key,
+      JSON.stringify({ transactions })
+    );
+  } catch (err) {
+    console.error("Local backup save error:", err);
+  }
+}
+
+function loadLocalBackup() {
+  if (!currentUser) return [];
+  try {
+    const key = localKeyForUser(currentUser.uid);
+    const raw = localStorage.getItem(key);
+    if (!raw) return [];
+    const data = JSON.parse(raw);
+    return Array.isArray(data.transactions) ? data.transactions : [];
+  } catch (err) {
+    console.error("Local backup load error:", err);
+    return [];
+  }
+}
+
 // Load from Firestore for this user
 async function loadState() {
   if (!currentUser) {
@@ -242,6 +275,8 @@ async function loadState() {
     return;
   }
 
+  const localTx = loadLocalBackup();
+
   try {
     const userDocRef = doc(db, "users", currentUser.uid);
     const snap = await getDoc(userDocRef);
@@ -250,11 +285,15 @@ async function loadState() {
       const data = snap.data();
       transactions = Array.isArray(data.transactions) ? data.transactions : [];
     } else {
-      transactions = [];
+      // No server data yet → use local backup if exists
+      transactions = localTx;
+      if (transactions.length > 0) {
+        await saveState(); // push local to server
+      }
     }
   } catch (err) {
     console.error("Failed to load state from Firestore:", err);
-    transactions = [];
+    transactions = localTx;
   }
 
   renderAll();
@@ -271,8 +310,11 @@ async function saveState() {
       { transactions },
       { merge: true }
     );
+    saveLocalBackup();
   } catch (err) {
     console.error("Failed to save state to Firestore:", err);
+    // still keep local so refresh doesn't wipe things
+    saveLocalBackup();
   }
 }
 
