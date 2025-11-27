@@ -11,9 +11,9 @@
 }
 
 :root {
-  --bg-main: #020617;
-  --bg-card: rgba(15, 23, 42, 0.96);
-  --bg-soft: rgba(15, 23, 42, 0.88);
+  --bg-main: #050506;
+  --bg-card: rgba(20, 20, 24, 0.96);
+  --bg-soft: rgba(20, 20, 24, 0.88);
   --border-subtle: rgba(148, 163, 184, 0.2);
   --border-strong: rgba(148, 163, 184, 0.5);
   --accent: #38bdf8; /* electric blue */
@@ -21,7 +21,7 @@
   --danger: #ef4444;
   --text-main: #e5e7eb;
   --text-soft: #9ca3af;
-  --glass: rgba(15, 23, 42, 0.8);
+  --glass: rgba(10, 10, 14, 0.8);
   --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.7);
   --radius-block: 18px;
   --radius-pill: 999px;
@@ -30,8 +30,8 @@
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, #1e293b 0, transparent 55%),
-    radial-gradient(circle at bottom right, #020617 0, transparent 55%),
+    radial-gradient(circle at top left, #222 0, transparent 55%),
+    radial-gradient(circle at bottom right, #111 0, transparent 55%),
     var(--bg-main);
   color: var(--text-main);
   display: flex;
@@ -63,8 +63,8 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 0 -20%, rgba(56, 189, 248, 0.36), transparent 55%),
-    radial-gradient(circle at 120% 120%, rgba(15, 23, 42, 0.9), transparent 55%);
+    radial-gradient(circle at 0 -20%, rgba(148, 163, 184, 0.36), transparent 55%),
+    radial-gradient(circle at 120% 120%, rgba(0, 0, 0, 0.9), transparent 55%);
   opacity: 0.6;
   pointer-events: none;
 }
@@ -87,6 +87,8 @@ h1 {
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-content: center;
+  width: 100%;
 }
 
 h1::before {
@@ -106,6 +108,7 @@ h1 .accent {
   font-size: 13px;
   color: var(--text-soft);
   margin-bottom: 18px;
+  text-align: center;
 }
 
 .subtitle.small {
@@ -125,7 +128,7 @@ h1 .accent {
   padding: 9px 12px;
   border-radius: var(--radius-block);
   background:
-    radial-gradient(circle at left, rgba(56, 189, 248, 0.16), transparent 55%),
+    radial-gradient(circle at left, rgba(148, 163, 184, 0.16), transparent 55%),
     var(--bg-soft);
   border: 1px solid var(--border-subtle);
   margin-bottom: 14px;
@@ -246,7 +249,7 @@ textarea {
   border: 1px solid rgba(55, 65, 81, 0.9);
   background:
     radial-gradient(circle at top left, rgba(148, 163, 184, 0.16), transparent 55%),
-    #020617;
+    #050506;
   color: var(--text-main);
   font-size: 13px;
   outline: none;
@@ -296,6 +299,7 @@ button:active {
   display: flex;
   gap: 8px;
   margin-bottom: 10px;
+  justify-content: center;
 }
 
 .nav-tab {
@@ -327,7 +331,7 @@ button:active {
 
 .summary-card {
   background:
-    radial-gradient(circle at top left, rgba(56, 189, 248, 0.2), transparent 55%),
+    radial-gradient(circle at top left, rgba(148, 163, 184, 0.2), transparent 55%),
     var(--bg-card);
   padding: 16px 16px 14px;
   border-radius: 22px;
@@ -365,7 +369,7 @@ button:active {
 }
 
 .summary-pill {
-  background: rgba(15, 23, 42, 0.96);
+  background: rgba(10, 10, 14, 0.96);
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.25);
   padding: 7px 10px;
@@ -439,8 +443,8 @@ button:active {
   border-radius: 12px;
   background: linear-gradient(
       135deg,
-      rgba(15, 23, 42, 0.96),
-      rgba(15, 23, 42, 0.92)
+      rgba(10, 10, 14, 0.96),
+      rgba(10, 10, 14, 0.92)
     );
   border: 1px solid rgba(31, 41, 55, 0.95);
   position: relative;
@@ -513,8 +517,8 @@ button:active {
   align-items: center;
   padding: 8px 10px;
   border-radius: 11px;
-  background: rgba(15, 23, 42, 0.98);
-  border: 1px solid rgba(30, 64, 175, 0.7);
+  background: rgba(10, 10, 14, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.4);
 }
 
 .account-name {
@@ -534,7 +538,7 @@ button:active {
 .budget-row {
   padding: 8px 9px;
   border-radius: 11px;
-  background: rgba(15, 23, 42, 0.96);
+  background: rgba(10, 10, 14, 0.96);
   border: 1px solid rgba(55, 65, 81, 0.8);
   display: grid;
   gap: 4px;
@@ -559,7 +563,7 @@ button:active {
   width: 100%;
   height: 6px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(10, 10, 14, 0.9);
   overflow: hidden;
 }
 
@@ -620,7 +624,7 @@ button:active {
 }
 
 .panel {
-  background: rgba(15, 23, 42, 0.98);
+  background: rgba(10, 10, 14, 0.98);
   border-radius: 14px;
   border: 1px solid var(--border-subtle);
   padding: 10px;
@@ -655,7 +659,7 @@ button:active {
 
 .tx-form-panel,
 .tx-table-panel {
-  background: rgba(15, 23, 42, 0.97);
+  background: rgba(10, 10, 14, 0.97);
   border-radius: 16px;
   border: 1px solid rgba(31, 41, 55, 0.9);
   padding: 10px 12px;
@@ -693,7 +697,7 @@ button:active {
 .ledger-row {
   border-radius: 12px;
   padding: 8px 9px;
-  background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.96));
+  background: radial-gradient(circle at top left, rgba(10, 10, 14, 0.98), rgba(10, 10, 14, 0.96));
   border: 1px solid rgba(31, 41, 55, 0.9);
 }
 
@@ -730,7 +734,7 @@ button:active {
 .ledger-meta span {
   padding: 2px 6px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.98);
+  background: rgba(10, 10, 14, 0.98);
   border: 1px solid rgba(31, 41, 55, 0.9);
 }
 
@@ -750,7 +754,7 @@ button:active {
   font-size: 10px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.98);
+  background: rgba(10, 10, 14, 0.98);
   border: 1px solid rgba(31, 41, 55, 0.9);
   text-transform: uppercase;
   letter-spacing: 0.05em;
